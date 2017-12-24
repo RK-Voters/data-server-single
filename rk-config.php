@@ -7,7 +7,7 @@
   if(strpos($cwd, "/var/www/html") !== false) {
     $config = array(
      "servername" => "localhost",
-     "username" => "root",
+     "username" => "admin",
      "password" => "8e2936b9a3287378dcb887c02a6d4f95d73f33206c6c9b1c",
      "database" => "dion"
    );
