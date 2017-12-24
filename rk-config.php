@@ -27,10 +27,10 @@
 
 
   // CREATE GLOBAL DATABASE OBJECT
-  include("db-rk_mysql.php");
+  include("models/db-rk_mysql.php");
   global $rkdb;
   $rkdb = new RK_MySQL($config);
 
 
   // LOAD UTILITIES
-  include("db-utilities.php");
+ // include("db-utilities.php");

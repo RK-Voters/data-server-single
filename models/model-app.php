@@ -16,8 +16,8 @@
 			// load request
 			$this -> request = $this -> _loadRequest();
 
-			// handle login
-			$this -> _handleLogin();
+			// handle login - need to rewrite this
+			// $this -> _handleLogin();
 
 		}
 
@@ -233,7 +233,7 @@
 
 
 		// get list of people by search criteria
-		function get_knocklist(){
+		function get_voterlist(){
 
 			extract((array) $this -> request['listRequest']);
 
@@ -251,141 +251,151 @@
 				}
 			}
 
-			if(isset($party) && $party != '-'){
-				$where[] = 'enroll="' . $party . '"';
+			if(isset($enroll) && $enroll != '-'){
+				$where[] = 'enroll="' . $enroll . '"';
 			}
 
 
-			if($street_name != 'Select Street...') $where[] = "stname = '$street_name'";
-			if(isset($stnum)) $where[] = "stnum = '$stnum'";
+			if($stname != '') $where[] = "stname = '$stname'";
+			if($stnum != '') $where[] = "stnum = '$stnum'";
+			if($city != '') $where[] = "city = '$city'";
 
 			if(isset($search_str) && $search_str != '') {
 				$where[] = "(firstname LIKE '%$search_str%' or lastname LIKE '%$search_str%'
 								or bio LIKE '%$search_str%' or phone  LIKE '%$search_str%')";
 			}
 
-
-
-			switch($type) {
-				// case 'All' : break;
-
-				case 'Active' :
-					$where[] = "active=1";
-				break;
-
-				case 'Volunteers' :
-					$where[] = "volunteer='true'";
-				break;
-
-				case 'Donors' :
-					$where[] = "EXISTS(SELECT * from voters_contacts where
-									voters.rkid=voters_contacts.rkid
-									and voters_contacts.type='Donation')";
-				break;
-
-				case 'Phones' :
-					$where[] = 'phone <> ""';
-					$limit = '';
-				break;
-
-				case 'Phones - Open' :
-					$where[] = 'phone <> ""';
-					$where[] = 'd = 0';
-					$limit = '';
-				break;
-
-
-				case 'Phones - Not Called' :
-					$where[] = 'phone <> ""';
-					$where[] = 'not exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Phone Call")';
-					$limit = '';
-				break;
-
-				case 'Phones (Not Anchor) - Not Called' :
-					$where[] = 'phoneType = ""';
-					$where[] = 'phone <> ""';
-					$where[] = 'not exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Phone Call")';
-					$limit = '';
-				break;
-
-				case 'Phones - Called' :
-					$where[] = 'phone <> ""';
-					$where[] = ' exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Phone Call")';
-					$limit = '';
-				break;
-
-				case 'Need Postcards' :
-					$where[] = 'stnum != 0';
-					$where[] = '(support_level=1 or support_level=2)';
-					$where[] = 'bio NOT LIKE "%vsc%" and bio <> ""';
-					$where[] = 'not exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Sent Post Card")';
-				break;
-
-				case 'Sent Postcards' :
-					$limit = '';
-					$where[] = ' exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Sent Post Card")';
-				break;
-
-				case 'Seniors - Phones - Not Called' :
-					$limit = '';
-					$where[] = 'not exists (select * from voters_contacts vc where
-									vc.rkid = voters.rkid and vc.type="Phone Call")';
-					$where[] = 'phone <> ""';
-					$where[] = 'yob < 1950';
-					$where[] = 'yob <> 0';
-					$where[] = 'phoneType <> "D1"';
-				break;
-
-				case 'Seniors - Phones' :
-					$limit = '';
-					$where[] = 'phone <> ""';
-					$where[] = 'yob < 1950';
-					$where[] = 'yob <> 0';
-				break;
-
-				case 'Active Under 35' :
-					$limit = '';
-					$where[] = 'dob > 1982';
-					$where[] = 'active=1';
-					$where[] = 'votedin2011=1';
-					$where[] = 'votedin2013=1';
-				break;
-
-				case 'Active Under 35 - with phones' :
-					$limit = '';
-					$where[] = 'yob > 1980';
-					$where[] = 'active=1';
-					$where[] = 'votedin2011=1';
-					$where[] = 'votedin2013=1';
-					$where[] = 'phone<>""';
-				break;
-
-				case 'West End - Super - No Contact' :
-					$limit = '';
-					$where[] = 'votedin2011=1';
-					$where[] = 'votedin2013=1';
-					$where[] = 'phone=""';
-					$where[] = 'support_level=0';
-
-				break;
-
-				case 'Parkside - Phones' :
-					$limit = '';
-					$where[] = 'phone<>""';
-				break;
-
+			if($lastname != ''){
+				$where[] = "lastname='" . $lastname . "'";
 			}
+
+			if($firstname != ''){
+				$where[] = "firstname='" . $firstname . "'";
+			}
+
+
+			// switch($type) {
+			// 	// case 'All' : break;
+
+			// 	case 'Active' :
+			// 		$where[] = "active=1";
+			// 	break;
+
+			// 	case 'Volunteers' :
+			// 		$where[] = "volunteer='true'";
+			// 	break;
+
+			// 	case 'Donors' :
+			// 		$where[] = "EXISTS(SELECT * from voters_contacts where
+			// 						voters.rkid=voters_contacts.rkid
+			// 						and voters_contacts.type='Donation')";
+			// 	break;
+
+			// 	case 'Phones' :
+			// 		$where[] = 'phone <> ""';
+			// 		$limit = '';
+			// 	break;
+
+			// 	case 'Phones - Open' :
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = 'd = 0';
+			// 		$limit = '';
+			// 	break;
+
+
+			// 	case 'Phones - Not Called' :
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = 'not exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
+			// 		$limit = '';
+			// 	break;
+
+			// 	case 'Phones (Not Anchor) - Not Called' :
+			// 		$where[] = 'phoneType = ""';
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = 'not exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
+			// 		$limit = '';
+			// 	break;
+
+			// 	case 'Phones - Called' :
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = ' exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
+			// 		$limit = '';
+			// 	break;
+
+			// 	case 'Need Postcards' :
+			// 		$where[] = 'stnum != 0';
+			// 		$where[] = '(support_level=1 or support_level=2)';
+			// 		$where[] = 'bio NOT LIKE "%vsc%" and bio <> ""';
+			// 		$where[] = 'not exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Sent Post Card")';
+			// 	break;
+
+			// 	case 'Sent Postcards' :
+			// 		$limit = '';
+			// 		$where[] = ' exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Sent Post Card")';
+			// 	break;
+
+			// 	case 'Seniors - Phones - Not Called' :
+			// 		$limit = '';
+			// 		$where[] = 'not exists (select * from voters_contacts vc where
+			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = 'yob < 1950';
+			// 		$where[] = 'yob <> 0';
+			// 		$where[] = 'phoneType <> "D1"';
+			// 	break;
+
+			// 	case 'Seniors - Phones' :
+			// 		$limit = '';
+			// 		$where[] = 'phone <> ""';
+			// 		$where[] = 'yob < 1950';
+			// 		$where[] = 'yob <> 0';
+			// 	break;
+
+			// 	case 'Active Under 35' :
+			// 		$limit = '';
+			// 		$where[] = 'dob > 1982';
+			// 		$where[] = 'active=1';
+			// 		$where[] = 'votedin2011=1';
+			// 		$where[] = 'votedin2013=1';
+			// 	break;
+
+			// 	case 'Active Under 35 - with phones' :
+			// 		$limit = '';
+			// 		$where[] = 'yob > 1980';
+			// 		$where[] = 'active=1';
+			// 		$where[] = 'votedin2011=1';
+			// 		$where[] = 'votedin2013=1';
+			// 		$where[] = 'phone<>""';
+			// 	break;
+
+			// 	case 'West End - Super - No Contact' :
+			// 		$limit = '';
+			// 		$where[] = 'votedin2011=1';
+			// 		$where[] = 'votedin2013=1';
+			// 		$where[] = 'phone=""';
+			// 		$where[] = 'support_level=0';
+
+			// 	break;
+
+			// 	case 'Parkside - Phones' :
+			// 		$limit = '';
+			// 		$where[] = 'phone<>""';
+			// 	break;
+
+			// }
 
 			if(count($where) == 0) return array();
 
 			$sql = "SELECT * FROM voters
 					WHERE " . implode(' and ', $where) .
 					" ORDER BY stname, stnum, unit, lastname" . $limit;
+
+			//echo $sql;
 
 			$knocklist = $this -> db -> get_results($sql);
 			foreach($knocklist as $index => $person){
@@ -394,35 +404,35 @@
 				}
 			}
 
-			// LIMIT TO WEST END
-			if($type == 'West End - Super - No Contact'){
-				$sql = 'select street_name from voters_streets where turfid=5 or turfid=6';
-				$streets = $this -> db -> get_results($sql);
-				foreach($streets as $street){
-					$streetHash[$street -> street_name] = true;
-				}
-				foreach($knocklist as $k => $person){
-					if($streetHash[$person -> stname1]){
-						$response[] = $person;
-					}
-				}
-				return $response;
-			}
+			// // LIMIT TO WEST END
+			// if($type == 'West End - Super - No Contact'){
+			// 	$sql = 'select street_name from voters_streets where turfid=5 or turfid=6';
+			// 	$streets = $this -> db -> get_results($sql);
+			// 	foreach($streets as $street){
+			// 		$streetHash[$street -> street_name] = true;
+			// 	}
+			// 	foreach($knocklist as $k => $person){
+			// 		if($streetHash[$person -> stname1]){
+			// 			$response[] = $person;
+			// 		}
+			// 	}
+			// 	return $response;
+			// }
 
-			// LIMIT TO PARKSIDE
-			if($type == 'Parkside - Phones' ){
-				$sql = 'select street_name from voters_streets where turfid=3';
-				$streets = $this -> db -> get_results($sql);
-				foreach($streets as $street){
-					$streetHash[$street -> street_name] = true;
-				}
-				foreach($knocklist as $k => $person){
-					if($streetHash[$person -> stname1]){
-						$response[] = $person;
-					}
-				}
-				return $response;
-			}
+			// // LIMIT TO PARKSIDE
+			// if($type == 'Parkside - Phones' ){
+			// 	$sql = 'select street_name from voters_streets where turfid=3';
+			// 	$streets = $this -> db -> get_results($sql);
+			// 	foreach($streets as $street){
+			// 		$streetHash[$street -> street_name] = true;
+			// 	}
+			// 	foreach($knocklist as $k => $person){
+			// 		if($streetHash[$person -> stname1]){
+			// 			$response[] = $person;
+			// 		}
+			// 	}
+			// 	return $response;
+			// }
 
 			return $knocklist;
 		}
@@ -578,7 +588,7 @@
 				foreach($sameNumber as $contact){
 					$contact -> bio = stripSlashes($contact -> bio);
 					$contact -> firstname = '(p) ' . $contact -> firstname;
-					$person['neighbors'][$contact -> id] = $contact;
+					$person['neighbors'][$contact -> rkid] = $contact;
 				}
 			}
 
