@@ -1,4 +1,5 @@
 <?php
+	// the test...
 
 	function handleError($errorMessage){
 		echo json_encode(array("error" => $errorMessage));
