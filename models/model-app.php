@@ -528,7 +528,7 @@
 			// get other people at that number
 			$person['neighbors'] = array();
 			if($person['phone'] != ''){
-				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "' and rkid <> " . $person['rkid'] . " and county='" . $person['county'] . "'";
+				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "' and rkid <> " . $person['rkid'] . " and city='" . $person['city'] . "'";
 				//echo $sql;
 				$sameNumber = $this -> db -> get_results($sql);
 				foreach($sameNumber as $contact){
@@ -546,7 +546,7 @@
 									and stname = '{$person['stname']}'
 									and unit = '{$person['unit']}'
 									and rkid <> {$person['rkid']}
-									and county='" . $person['county'] . "'";
+									and city='" . $person['city'] . "'";
 				//echo $sql;
 
 				$housemates = $this -> db -> get_results($sql);
