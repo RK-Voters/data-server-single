@@ -11,6 +11,8 @@
 			$this -> conn = new mysqli($servername, $username, $password, $database);
 			$this -> debugMode = false;
 			$this -> linebreak = "\n\n";
+			$this -> microtime = microtime();
+
 
 			if ($this -> conn->connect_error) {
 				die("Connection failed: " . $this -> conn -> connect_error);
@@ -20,6 +22,13 @@
 
 		function run_query($sql){
 			$response =  $this -> conn -> query($sql);
+
+			if($this -> debugMode){
+				$current_time = microtime();
+				echo $sql . "\nTook: " . (($current_time - $this -> microtime) * 10) . "\n\n";
+			}
+			$this -> microtime = microtime();
+
 			if (!$response) {
 
 				$error_str = 	$this -> conn->error .

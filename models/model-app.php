@@ -18,7 +18,7 @@
 			$this -> request = $this -> _loadRequest();
 
 			// handle login - need to rewrite this
-			// $this -> _handleLogin();
+			$this -> _handleLogin();
 
 		}
 
@@ -51,39 +51,52 @@
 			return $request;
 		}
 
+
+
+		// THIS SHOULD BE WRITTEN ASAP
+		// OTHERWISE, IT'S A PUBLIC API
+		// BUT IT CAN LAUNCH WITHOUT IT
 		function _handleLogin(){
 
 			extract($this -> request);
 
 			// is there an access token?
-			if(!isset($access_token) || $access_token == '' || !isset($campaign_slug) || $access_token == ''){
-				handleError("Please provide an access token and a campaign slug.");
+			// if(!isset($access_token) || $access_token == '' || !isset($campaign_slug) || $access_token == ''){
+			// 	handleError("Please provide an access token and a campaign slug.");
+			// }
+
+			// // look up access token
+			// $user = $this -> db -> get_rowFromObj("users", array("access_token" => $access_token));
+			// if(count($user) == 0) handleError("Invalid access token.");
+
+
+			// // what campaign is this access token for?
+			// $campaign = $this -> db -> get_rowFromObj("campaigns", array("campaignSlug" => $campaign_slug));
+			// if(count($campaign) == 0) handleError("Invalid campaign slug.");
+
+
+			// $where = array(
+			// 	"userId" => $user -> userId,
+			// 	"campaignId" => $campaign -> campaignId
+			// );
+			// $access = $this -> db -> get_rowFromObj("user_access", $where);
+
+			// if(count($access) != 1) handleError("Uh oh. Looks like you don't have access to that campaign");
+
+
+			// is there a user name?
+			if(!isset($user_name) || $user_name == ''){
+				handleError("Please provide a user name.");
 			}
-
-			// look up access token
-			$user = $this -> db -> get_rowFromObj("users", array("access_token" => $access_token));
-			if(count($user) == 0) handleError("Invalid access token.");
-
-
-			// what campaign is this access token for?
-			$campaign = $this -> db -> get_rowFromObj("campaigns", array("campaignSlug" => $campaign_slug));
-			if(count($campaign) == 0) handleError("Invalid campaign slug.");
-
-
-			$where = array(
-				"userId" => $user -> userId,
-				"campaignId" => $campaign -> campaignId
-			);
-			$access = $this -> db -> get_rowFromObj("user_access", $where);
-
-			if(count($access) != 1) handleError("Uh oh. Looks like you don't have access to that campaign");
 
 
 			// set the campaign id
-			$this -> campaignId = $campaign -> campaignId;
+			//$this -> campaignId = $campaign -> campaignId;
 
 			// set the user
-			$this -> user = $user;
+			//$this -> user = $user;
+
+			$this -> user_name = $user_name;
 		}
 
 		function getUserById($userId){
@@ -242,153 +255,115 @@
 
 			$where = array();
 
-			if(isset($support_level) && $support_level != '-'){
+
+			// FIRST NAME
+			if($firstname != ''){
+				$where[] = "firstname='" . $this -> db -> escape($firstname) . "'";
+			}
+
+
+			// LAST NAME
+			if($lastname != ''){
+				$where[] = "lastname='" . $this -> db -> escape($lastname) . "'";
+			}
+
+
+			// SUPPORT LEVEL
+			if($support_level != 'Support Level'){
 				if($support_level == 0){
 					$where[] = 	'(support_level=0 or ' .
 								'(support_level = 2 and (bio LIKE "%vsc%" or bio = "")))';
 				}
 				else {
-					$where[] = 'support_level=' . $support_level;
+					$where[] = 'support_level=' . (int) $support_level;
 				}
 			}
 
-			if(isset($enroll) && $enroll != '-'){
-				$where[] = 'enroll="' . $enroll . '"';
+
+			// PARTY
+			if($enroll != 'Party'){
+				$where[] = "enroll='" . $this -> db -> escape($enroll) . "'";
 			}
 
 
-			if($stname != '') $where[] = "stname = '$stname'";
-			if($stnum != '') $where[] = "stnum = '$stnum'";
-			if($city != '') $where[] = "city = '$city'";
-
-			if(isset($search_str) && $search_str != '') {
-				$where[] = "(firstname LIKE '%$search_str%' or lastname LIKE '%$search_str%'
-								or bio LIKE '%$search_str%' or phone  LIKE '%$search_str%')";
-			}
-
-			if($lastname != ''){
-				$where[] = "lastname='" . $lastname . "'";
-			}
-
-			if($firstname != ''){
-				$where[] = "firstname='" . $firstname . "'";
+			// GENDER
+			if($sex != 'Gender'){
+				$where[] = "sex='" . $this -> db -> escape($sex) . "'";
 			}
 
 
-			// switch($type) {
-			// 	// case 'All' : break;
+			// AGE
+			if($age_range != 'Age'){
 
-			// 	case 'Active' :
-			// 		$where[] = "active=1";
-			// 	break;
+				$year = (int) date("Y");
 
-			// 	case 'Volunteers' :
-			// 		$where[] = "volunteer='true'";
-			// 	break;
+				switch($age_range){
 
-			// 	case 'Donors' :
-			// 		$where[] = "EXISTS(SELECT * from voters_contacts where
-			// 						voters.rkid=voters_contacts.rkid
-			// 						and voters_contacts.type='Donation')";
-			// 	break;
+					case "18-35":
+						$max = $year - 34;
+						$where[] = "dob > " . $max;
+					break;
 
-			// 	case 'Phones' :
-			// 		$where[] = 'phone <> ""';
-			// 		$limit = '';
-			// 	break;
+					case "35-50":
+						$min = $year - 34;
+						$max = $year - 49;
+						$where[] = "(dob < " . $min . " AND dob > " . $max . ")";
+					break;
 
-			// 	case 'Phones - Open' :
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = 'd = 0';
-			// 		$limit = '';
-			// 	break;
+					case "50-65":
+						$min = $year - 49;
+						$max = $year - 64;
+						$where[] = "(dob < " . $min . " AND dob > " . $max . ")";
+					break;
+
+					case "65-80":
+						$min = $year - 64;
+						$max = $year - 79;
+						$where[] = "(dob < " . $min . " AND dob > " . $max . ")";
+					break;
+
+					case "80+":
+						$min = $year - 79;
+						$where[] = "dob < " . $min;
+					break;
+
+				}
+			}
 
 
-			// 	case 'Phones - Not Called' :
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = 'not exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
-			// 		$limit = '';
-			// 	break;
 
-			// 	case 'Phones (Not Anchor) - Not Called' :
-			// 		$where[] = 'phoneType = ""';
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = 'not exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
-			// 		$limit = '';
-			// 	break;
+			// CHECKBOXES
+			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other", "active");
+			foreach($cb_fields as $f){
+				if(isset($$f) && $$f == "true"){
+					$where[] = $f . '=1';
+				}
+			}
+			if(isset($has_phone) && $has_phone == "true"){ 
+				$where[] = "(phone != '' OR phone2 != '')";
+			}
+			if(isset($never_called) && $never_called == "true"){ 
+				$where[] = "callcount=0";
+			}
 
-			// 	case 'Phones - Called' :
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = ' exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
-			// 		$limit = '';
-			// 	break;
 
-			// 	case 'Need Postcards' :
-			// 		$where[] = 'stnum != 0';
-			// 		$where[] = '(support_level=1 or support_level=2)';
-			// 		$where[] = 'bio NOT LIKE "%vsc%" and bio <> ""';
-			// 		$where[] = 'not exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Sent Post Card")';
-			// 	break;
+			// ADDRESS
+			$addr_fields = array("stname", "stnum", "city", "zip", "county");
+			foreach($addr_fields as $f){
+				if($f == "county" && $$f == "County") continue;
+				if(isset($$f) && $$f != "") $where[] = $f . "='" . $this -> db -> escape($$f) . "'";
+			}
 
-			// 	case 'Sent Postcards' :
-			// 		$limit = '';
-			// 		$where[] = ' exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Sent Post Card")';
-			// 	break;
 
-			// 	case 'Seniors - Phones - Not Called' :
-			// 		$limit = '';
-			// 		$where[] = 'not exists (select * from voters_contacts vc where
-			// 						vc.rkid = voters.rkid and vc.type="Phone Call")';
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = 'yob < 1950';
-			// 		$where[] = 'yob <> 0';
-			// 		$where[] = 'phoneType <> "D1"';
-			// 	break;
 
-			// 	case 'Seniors - Phones' :
-			// 		$limit = '';
-			// 		$where[] = 'phone <> ""';
-			// 		$where[] = 'yob < 1950';
-			// 		$where[] = 'yob <> 0';
-			// 	break;
 
-			// 	case 'Active Under 35' :
-			// 		$limit = '';
-			// 		$where[] = 'dob > 1982';
-			// 		$where[] = 'active=1';
-			// 		$where[] = 'votedin2011=1';
-			// 		$where[] = 'votedin2013=1';
-			// 	break;
-
-			// 	case 'Active Under 35 - with phones' :
-			// 		$limit = '';
-			// 		$where[] = 'yob > 1980';
-			// 		$where[] = 'active=1';
-			// 		$where[] = 'votedin2011=1';
-			// 		$where[] = 'votedin2013=1';
-			// 		$where[] = 'phone<>""';
-			// 	break;
-
-			// 	case 'West End - Super - No Contact' :
-			// 		$limit = '';
-			// 		$where[] = 'votedin2011=1';
-			// 		$where[] = 'votedin2013=1';
-			// 		$where[] = 'phone=""';
-			// 		$where[] = 'support_level=0';
-
-			// 	break;
-
-			// 	case 'Parkside - Phones' :
-			// 		$limit = '';
-			// 		$where[] = 'phone<>""';
-			// 	break;
-
+			// BIO SEARCH
+			// if(isset($search_str) && $search_str != '') {
+			// 	$where[] = "(firstname LIKE '%$search_str%' or lastname LIKE '%$search_str%'
+			// 					or bio LIKE '%$search_str%' or phone  LIKE '%$search_str%')";
 			// }
+
+			
 
 			if(count($where) == 0) return array();
 
@@ -396,44 +371,11 @@
 					WHERE " . implode(' and ', $where) .
 					" ORDER BY stname, stnum, unit, lastname" . $limit;
 
-			//echo $sql;
+			//echo $sql; exit();
 
 			$knocklist = $this -> db -> get_results($sql);
-			foreach($knocklist as $index => $person){
-				foreach($person as $field => $value){
-					$knocklist[$index] -> $field = stripSlashes($value);
-				}
-			}
 
-			// // LIMIT TO WEST END
-			// if($type == 'West End - Super - No Contact'){
-			// 	$sql = 'select street_name from voters_streets where turfid=5 or turfid=6';
-			// 	$streets = $this -> db -> get_results($sql);
-			// 	foreach($streets as $street){
-			// 		$streetHash[$street -> street_name] = true;
-			// 	}
-			// 	foreach($knocklist as $k => $person){
-			// 		if($streetHash[$person -> stname1]){
-			// 			$response[] = $person;
-			// 		}
-			// 	}
-			// 	return $response;
-			// }
-
-			// // LIMIT TO PARKSIDE
-			// if($type == 'Parkside - Phones' ){
-			// 	$sql = 'select street_name from voters_streets where turfid=3';
-			// 	$streets = $this -> db -> get_results($sql);
-			// 	foreach($streets as $street){
-			// 		$streetHash[$street -> street_name] = true;
-			// 	}
-			// 	foreach($knocklist as $k => $person){
-			// 		if($streetHash[$person -> stname1]){
-			// 			$response[] = $person;
-			// 		}
-			// 	}
-			// 	return $response;
-			// }
+			
 
 			return $knocklist;
 		}
@@ -569,21 +511,24 @@
 
 
 			// get contacts
-			$sql = "SELECT * FROM voters_contacts, users
-							WHERE voters_contacts.rkid = $rkid AND voters_contacts.userId = users.userId
-							ORDER BY datetime desc";
-			$contactsRaw = $this -> db -> get_results($sql);
+			// AND voters_contacts.userId = users.userId 
+			// once we have authentication in place, we'll be able to fetch info on the volunteer who had the contact.
 
-			// process contacts
-			foreach($contactsRaw as $contact){
-				$contact -> note = stripSlashes($contact -> note);
-				$person['contacts'][] = $contact;
-			}
+			$sql = "SELECT * FROM voters_contacts
+							WHERE voters_contacts.rkid = $rkid 
+							ORDER BY datetime desc";
+
+			// echo $sql; exit();
+
+
+			$person['contacts'] = $this -> db -> get_results($sql);
+
+			
 
 			// get other people at that number
 			$person['neighbors'] = array();
 			if($person['phone'] != ''){
-				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "' and rkid <> " . $person['rkid'];
+				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "' and rkid <> " . $person['rkid'] . " and county='" . $person['county'] . "'";
 				//echo $sql;
 				$sameNumber = $this -> db -> get_results($sql);
 				foreach($sameNumber as $contact){
@@ -600,7 +545,8 @@
 									stnum = '{$person['stnum']}'
 									and stname = '{$person['stname']}'
 									and unit = '{$person['unit']}'
-									and rkid <> {$person['rkid']}";
+									and rkid <> {$person['rkid']}
+									and county='" . $person['county'] . "'";
 				//echo $sql;
 
 				$housemates = $this -> db -> get_results($sql);
@@ -648,6 +594,11 @@
 			unset($update['neighbors']);
 			unset($update['$$hashKey']);
 
+			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other");
+			foreach($cb_fields as $f){
+				$update[$f] = (isset($update[$f]) && $update[$f] == "true") ? 1 : 0;
+			}
+
 
 			$this -> db -> update('voters', $update, $where);
 
@@ -681,7 +632,8 @@
 				$contact['datetime'] = date("Y-m-d H:i:s", $datetime);
 			}
 
-			$contact['userId'] = $this -> user -> userId;
+			//$contact['userId'] = $this -> user -> userId;
+			$contact['user_name'] = $this -> user_name;
 
 
 			// if you made a phone call, record it for others with the same number
@@ -699,7 +651,8 @@
 
 			// if not, just record the contact for the person targetted
 			else {
-				$contact['support_level'];
+				//$contact['support_level'];
+				//print_r($contact);
 				$response = $this -> db -> insert('voters_contacts', $contact);
 			}
 
