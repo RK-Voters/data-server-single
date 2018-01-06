@@ -1,6 +1,7 @@
 <?php
 
-	include('../rk-config.php');
+	$pathToDBLIB = getCwd() . '/../rk-config.php';
+	include($pathToDBLIB);
 	global $rkdb;
 	$conn = $rkdb -> conn;
 
