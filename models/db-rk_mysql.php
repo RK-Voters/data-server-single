@@ -3,9 +3,9 @@
 
 	Class RK_MySQL {
 
-    // constructor
-    function __construct($config){
-      extract($config);
+	    // constructor
+	    function __construct($config){
+      		extract($config);
 
 			// Create connection
 			$this -> conn = new mysqli($servername, $username, $password, $database);
