@@ -4,10 +4,24 @@
 	global $rkdb;
 	$conn = $rkdb -> conn;
 
-    $path = getCwd() . "/../../backups/export-" . date("Y-m-d") . ".csv";
+
+	// THIS IS THE PATH ON DEV - IF YOU WANT IT TO RUN LOCALLY, YOU'LL HAVE TO CHANGE IT...
+    $path = "/var/lib/mysql-files/rkvoters-export-" . date("Y-m-d") . ".csv";
 
 	
 
+	
+	// $result = mysqli_query($conn, 'SHOW VARIABLES LIKE "secure_file_priv"');
+	// if (!$result) {
+	//     echo 'Could not run query: ' . mysqli_error();
+	//     exit;
+	// }
+	// if (mysqli_num_rows($result) > 0) {
+		
+	//     while ($row = mysqli_fetch_assoc($result)) {
+	//         print_r($row);
+	//     }
+	// }
 
 
 	$sql = "SELECT * FROM voters
