@@ -1,7 +1,7 @@
 <?php
 
   // SERVER CONFIG
-  $cwd = getcwd();
+  $cwd = __FILE__;
   global $config;
 
   if(strpos($cwd, "/var/www/html") !== false) {
