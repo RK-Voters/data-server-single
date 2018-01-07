@@ -639,7 +639,10 @@
 			// if you made a phone call, record it for others with the same number
 			if($contact['type'] == 'Phone Call' && $person['phone'] != '') {
 
-				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "'";
+				$sql = "SELECT * FROM voters WHERE 
+								phone = '" . $this -> db -> escape($person['phone']) . "' 
+								and city='" . $this -> db -> escape($person['city']) . "'";
+
 				$sameNumber = $this -> db -> get_results($sql);
 				//$this -> request['person']['callcount']++;
 
@@ -679,8 +682,7 @@
 			$where = array('rkid' => $rkid);
 			$this -> db -> delete('voters', $where);
 			return array(
-				"status" => "deleted",
-				"knocklist" => $this -> get_knocklist()
+				"status" => "deleted"
 			);
 		}
 

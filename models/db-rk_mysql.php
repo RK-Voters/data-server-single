@@ -69,12 +69,16 @@
 
     	function get_var($sql){
 			 $result = $this -> run_query($sql);
-			 return $result ? $result -> fetch_array()[0] : false;
+			 return $result ? $this -> unEscape($result -> fetch_array()[0]) : false;
 		}
 
 		function get_row($sql){
 			$result = $this -> run_query($sql);
-			return ($result) ? $result -> fetch_object() : array();
+			$row = ($result) ? $result -> fetch_object() : array();
+			foreach($row as $k => $v){
+				$row -> $k = $this -> unEscape($v);
+			}
+			return $row;
 		}
 
 		function get_rowFromObj($table, $where){
@@ -92,6 +96,14 @@
 
 			while($response[] = $result -> fetch_object());
 			unset($response[count($response) -1]);
+
+
+			foreach($response as $rowIndex => $row){
+				foreach($row as $k => $v){
+					$response[$rowIndex] -> $k = $this -> unEscape($v);
+				}
+			}
+
 			return $response;
 		}
 
@@ -237,6 +249,11 @@
 		// UTILITIES
 		function escape($str){
 			return mysqli_real_escape_string($this -> conn, $str);
+		}
+
+
+		function unEscape($str){
+			return stripslashes($str);
 		}
 
 
