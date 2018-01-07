@@ -49,30 +49,37 @@
 
 
 	// EXPORT OUT OF OLD DB
-	$rkdb -> conn -> query('SET CHARACTER SET utf8');
-	$sql = 'SELECT * FROM voters_contacts';
-	$voters = $rkdb -> get_results($sql);
-	$txt =  json_encode($voters, JSON_PRETTY_PRINT);
-	echo ($txt) ? $txt : json_last_error_msg();	
+	// $rkdb -> conn -> query('SET CHARACTER SET utf8');
+	// $sql = 'SELECT * FROM voters_contacts';
+	// $voters = $rkdb -> get_results($sql);
+	// $txt =  json_encode($voters, JSON_PRETTY_PRINT);
+	// echo ($txt) ? $txt : json_last_error_msg();	
 
 
 	//IMPORT INTO NEW DB
-	$votersRaw = json_decode(file_get_contents("../data/old_crm.json"));
-	foreach($votersRaw as $voter){
-		$voter = (array) $voter;
+	// $votersRaw = json_decode(file_get_contents("../data/old_crm.json"));
+	// foreach($votersRaw as $voter){
+	// 	$voter = (array) $voter;
 
-		$voter['vanid'] = $voter['rkid'];
-		unset($voter['rkid']);
+	// 	$voter['vanid'] = $voter['rkid'];
+	// 	unset($voter['rkid']);
+	// 	unset($voter['campaignId']);
+	// 	unset($voter['streetId']);
 
-		$voter['support_level'] = 2;
-		$voter['email_opt_in'] = 1;
+	// 	$voter['volunteer'] 	= ($voter['volunteer'] == '') ? 0 : 1;
+	// 	$voter['wants_sign'] 	= ($voter['wants_sign'] == '') ? 0 : 1;
+	// 	$voter['host_event']	= ($voter['host_event'] == '') ? 0 : 1;
+	// 	$voter['volunteer_other'] = ($voter['volunteer_other'] == '') ? 0 : 1;
+
+	
+	// 	$voter['support_level'] = 2;
+	// 	$voter['email_opt_in'] = 1;
 
 
-		$rkdb -> insert("voters", $voter);
+	// 	$rkdb -> insert("voters", $voter);
 
-		exit();
 
-	}
+	// }
 
 
 
@@ -100,6 +107,7 @@
 		// make sure voter comes up as a supporter
 		$voter['support_level'] = 1;
 		$rkdb -> update("voters", $voter, array("rkid" => $voter['rkid']));
+
 
 	}
 

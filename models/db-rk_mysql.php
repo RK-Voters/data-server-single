@@ -9,6 +9,8 @@
 
 			// Create connection
 			$this -> conn = new mysqli($servername, $username, $password, $database);
+			$this -> conn -> query('SET CHARACTER SET utf8');
+
 			$this -> debugMode = false;
 			$this -> linebreak = "\n\n";
 			$this -> microtime = microtime();
