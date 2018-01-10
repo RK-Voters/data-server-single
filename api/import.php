@@ -57,59 +57,83 @@
 
 
 	//IMPORT INTO NEW DB
-	// $votersRaw = json_decode(file_get_contents("../data/old_crm.json"));
-	// foreach($votersRaw as $voter){
-	// 	$voter = (array) $voter;
+	$votersRaw = json_decode(file_get_contents("../data/old_crm.json"));
+	$missingEmails = 0; 
 
-	// 	$voter['vanid'] = $voter['rkid'];
-	// 	unset($voter['rkid']);
-	// 	unset($voter['campaignId']);
-	// 	unset($voter['streetId']);
+	foreach($votersRaw as $voter){
+		$voter = (array) $voter;
 
-	// 	$voter['volunteer'] 	= ($voter['volunteer'] == '') ? 0 : 1;
-	// 	$voter['wants_sign'] 	= ($voter['wants_sign'] == '') ? 0 : 1;
-	// 	$voter['host_event']	= ($voter['host_event'] == '') ? 0 : 1;
-	// 	$voter['volunteer_other'] = ($voter['volunteer_other'] == '') ? 0 : 1;
+		// $voter['vanid'] = $voter['rkid'];
+		// unset($voter['rkid']);
+		// unset($voter['campaignId']);
+		// unset($voter['streetId']);		
+		// $voter['support_level'] = 2;
+		// $voter['email_opt_in'] = 1;
+
+
+
+
+		$update = array();
+
+		// these are yielding 1s when they shouldn't be...
+		$update['volunteer'] 		= ($voter['volunteer'] == 'true') ? 1 : 0;
+		$update['wants_sign'] 		= ($voter['wants_sign'] == 'true') ? 1 : 0;
+		$update['host_event']		= ($voter['host_event'] == 'true') ? 1 : 0;
+		$update['volunteer_other'] 	= ($voter['volunteer_other'] == 'true') ? 1 : 0;
+
+		$status = $update['volunteer'] . ' ' . $update['wants_sign'] . ' ' . $update['host_event'] . ' ' . $update['volunteer_other'];
+
+		if($status == "0 0 0 0") continue;
+
+		echo $voter['firstname'] . ' ' . $voter['lastname'] . "\n$status\n\n";
 
 	
-	// 	$voter['support_level'] = 2;
-	// 	$voter['email_opt_in'] = 1;
+
+		if($voter['email'] == ''){
+			echo "No email for: " . $voter['firstname'] . ' ' . $voter['lastname'] . "\n";
+			$missingEmails++;
+			continue;
+		}
 
 
-	// 	$rkdb -> insert("voters", $voter);
-
-
-	// }
-
-
-
-	$contactsRaw = json_decode(file_get_contents("../data/old_crm_contacts.json"));
-	foreach($contactsRaw as $contact){
-		$contact = (array) $contact;
-
-		print_r($contact);
-
-		$sql = 'SELECT * FROM voters where vanid=' . $contact['rkid'];
-		$voter = (array) $rkdb -> get_row($sql);
-
-		print_R($voter);
-
-		unset($contact['vc_id']);
-		$contact['user_name'] = $contact['userName'];
-		unset($contact['userName']);
-
-		$contact['rkid'] = $voter['rkid'];
-
-		$rkdb -> insert("voters_contacts", $contact);
+		$where = array("email" => $voter["email"]);
+		$rkdb -> updateOrCreate("voters", $update, $where);
 
 
 		
-		// make sure voter comes up as a supporter
-		$voter['support_level'] = 1;
-		$rkdb -> update("voters", $voter, array("rkid" => $voter['rkid']));
-
 
 	}
+
+	echo "Missing $missingEmails emails.";
+
+
+	// $contactsRaw = json_decode(file_get_contents("../data/old_crm_contacts.json"));
+	// foreach($contactsRaw as $contact){
+	// 	$contact = (array) $contact;
+
+	// 	print_r($contact);
+
+	// 	$sql = 'SELECT * FROM voters where vanid=' . $contact['rkid'];
+	// 	$voter = (array) $rkdb -> get_row($sql);
+
+	// 	print_R($voter);
+
+	// 	unset($contact['vc_id']);
+	// 	$contact['user_name'] = $contact['userName'];
+	// 	unset($contact['userName']);
+
+	// 	$contact['rkid'] = $voter['rkid'];
+
+	// 	$rkdb -> insert("voters_contacts", $contact);
+
+
+		
+	// 	// make sure voter comes up as a supporter
+	// 	$voter['support_level'] = 1;
+	// 	$rkdb -> update("voters", $voter, array("rkid" => $voter['rkid']));
+
+
+	// }
 
 
 

@@ -114,16 +114,20 @@
     // SETTERS
 		function _countWhereStr($table, $where){
 
+
+
+
 			// where string
 			if(count($where) == 0) exit("Missing WHERE.");
 			foreach($where as $k => $v) {
-				if(!is_numeric($v) || $v == 0) exit("Bad WHERE: $k => $v");
-				$whereTerms[] = $k . '=' . (int) $v;
+				// if($v == 0) exit("Bad WHERE: $k => $v");
+				$whereTerms[] = $k . "='" . $v . "'";
 			}
 			$whereStr = implode(' AND ', $whereTerms);
 
 			// look for it?
 			$sql = "SELECT COUNT(*) FROM $table WHERE " . $whereStr;
+
 			$count = $this -> get_var($sql);
 			return $count;
 		}
@@ -199,6 +203,7 @@
 
 			$count = $this -> _countWhereStr($table, $where);
 
+
 			// if it's not there, add it!
 			if($count == 0){
 				$newObject = $update;
@@ -206,8 +211,15 @@
 			}
 
 			// if it is, update it
-			else if($count == 1) {
-				$this -> update($table, $update, $where);
+			else if($count == 1 || $count == 2) {
+				$this -> update($table, $update, $where, 2);
+			}
+
+			// if there's more than one, report it
+			else {
+				echo "Uh oh. There are multiple matches for:\n";
+				print_r($where);
+				echo "\n--\n\n";
 			}
 
 			return $this -> get_rowFromObj($table, $where);
