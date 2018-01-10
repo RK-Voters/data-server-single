@@ -708,6 +708,14 @@
 			foreach($fields as $f){
 				$update[$f] = $contact -> $f;
 			}
+
+			// fix checkbox fields
+			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other");
+			foreach($cb_fields as $f){
+				$update[$f] = (isset($update[$f]) && $update[$f] == "true") ? 1 : 0;
+			}
+
+
 			$update['active'] = 1;
 			$where = array("rkid" => $voter_rkid);
 			$this -> db -> update("voters", $update, $where);
