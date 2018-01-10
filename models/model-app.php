@@ -528,11 +528,15 @@
 			// get other people at that number
 			$person['neighbors'] = array();
 			if($person['phone'] != ''){
-				$sql = "SELECT * FROM voters WHERE phone = '" . $person['phone'] . "' and rkid <> " . $person['rkid'] . " and city='" . $person['city'] . "'";
+				$sql = "SELECT * FROM voters WHERE 
+							phone = '" . $this -> db -> escape($person['phone']) . "' 
+							and rkid <> " . $this -> db -> escape($person['rkid']) . " 
+							and city='" . $this -> db -> escape($person['city']) . "'";
+
 				//echo $sql;
 				$sameNumber = $this -> db -> get_results($sql);
+
 				foreach($sameNumber as $contact){
-					$contact -> bio = stripSlashes($contact -> bio);
 					$contact -> firstname = '(p) ' . $contact -> firstname;
 					$person['neighbors'][$contact -> rkid] = $contact;
 				}
@@ -542,11 +546,11 @@
 			// get other people at the same address
 			if($person['stname'] != ''){
 				$sql = 	"	SELECT * FROM voters WHERE
-									stnum = '{$person['stnum']}'
-									and stname = '{$person['stname']}'
-									and unit = '{$person['unit']}'
-									and rkid <> {$person['rkid']}
-									and city='" . $person['city'] . "'";
+							stnum = '" . $this -> db -> escape($person['stnum']) . "'
+							and stname = '" . $this -> db -> escape($person['stname']) . "'
+							and unit = '" . $this -> db -> escape($person['unit']) . "'
+							and rkid <> " . $this -> db -> escape($person['rkid']) . "
+							and city='" . $this -> db -> escape($person['city']) . "'";
 				//echo $sql;
 
 				$housemates = $this -> db -> get_results($sql);
@@ -684,6 +688,38 @@
 			return array(
 				"status" => "deleted"
 			);
+		}
+
+
+		// merge people
+		function merge_people(){
+			extract($this -> request);
+
+			// transfer contact's contacts to voter
+			$contact_rkid = (int) $contact -> rkid;
+			$voter_rkid = (int) $voter -> rkid;
+			$sql = 'UPDATE voters_contacts set rkid=' . $voter_rkid . ' where rkid=' . $contact_rkid;
+			$this -> db -> run_query($sql);
+
+
+			// transfer contact's data onto voter
+			$fields = array("support_level", "bio","volunteer","wants_sign","host_event","volunteer_other",
+							"firstname","lastname","email","email_opt_in","phone","phoneType","phone2","phone2Type","profession","employer","website");
+			foreach($fields as $f){
+				$update[$f] = $contact -> $f;
+			}
+			$update['active'] = 1;
+			$where = array("rkid" => $voter_rkid);
+			$this -> db -> update("voters", $update, $where);
+
+
+			// remove contact entry
+			$this -> db -> delete('voters', array("rkid" => $contact_rkid));
+
+
+			// return updated voter list
+			return $this -> get_voterlist();
+
 		}
 
 
