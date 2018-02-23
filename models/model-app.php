@@ -384,7 +384,10 @@
 
 			if(isset($rkid)){
 				$where = array('rkid' => $rkid);
-				$update = array("has_signed" => $has_signed);
+				$update = array(
+					"has_signed" => $has_signed,
+					"support_level" => $support_level
+				);
 				$this -> db -> update('voters', $update, $where);	
 			}
 			
