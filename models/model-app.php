@@ -196,7 +196,7 @@
 
 
 			// CHECKBOXES
-			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other", "active");
+			$cb_fields = array("volunteer", "wants_sign", "host_event", "has_signed", "active");
 			foreach($cb_fields as $f){
 				if(isset($$f) && $$f == "true"){
 					$where[] = $f . '=1';
@@ -358,7 +358,7 @@
 			unset($update['neighbors']);
 			unset($update['$$hashKey']);
 
-			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other");
+			$cb_fields = array("volunteer", "wants_sign", "host_event", "has_signed");
 			foreach($cb_fields as $f){
 				$update[$f] = (isset($update[$f]) && $update[$f] == "true") ? 1 : 0;
 			}
@@ -377,6 +377,18 @@
 
 
 			return $this -> getFullPerson($person -> rkid);
+		}
+
+		function toggleSigned(){
+			extract($this -> request);
+
+			if(isset($rkid)){
+				$where = array('rkid' => $rkid);
+				$update = array("has_signed" => $has_signed);
+				$this -> db -> update('voters', $update, $where);	
+			}
+			
+			return array("tally" => $this -> db -> get_var('SELECT COUNT(*) FROM voters where has_signed!=0'));
 		}
 
 
@@ -463,14 +475,14 @@
 
 
 			// transfer contact's data onto voter
-			$fields = array("support_level", "bio","volunteer","wants_sign","host_event","volunteer_other",
+			$fields = array("support_level", "bio","volunteer","wants_sign","host_event",
 							"firstname","lastname","email","email_opt_in","phone","phoneType","phone2","phone2Type","profession","employer","website");
 			foreach($fields as $f){
 				$update[$f] = $contact -> $f;
 			}
 
 			// fix checkbox fields
-			$cb_fields = array("volunteer", "wants_sign", "host_event", "volunteer_other");
+			$cb_fields = array("volunteer", "wants_sign", "host_event");
 			foreach($cb_fields as $f){
 				$update[$f] = (isset($update[$f]) && $update[$f] == "true") ? 1 : 0;
 			}
