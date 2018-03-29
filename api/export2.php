@@ -6,6 +6,8 @@
 	// // Start output buffering (to capture stream contents)
 	// ob_start();
 
+    $path = "/var/lib/mysql-files/rkvoters-export-york.csv";
+
 	
 
 	// // OUTPUT FIELDS
@@ -24,8 +26,8 @@
 	// AND EXPORT...
 	$sql = 	"SELECT " . implode(',', $fields) .
 			" FROM voters
-			WHERE enroll = 'D' and active=1
-			INTO OUTFILE 'dion_2018.csv'
+			WHERE enroll = 'D' and active=1 and county='York'
+			INTO OUTFILE '" . $path . "'
 			FIELDS TERMINATED BY ','
 			ENCLOSED BY '\"'
 			LINES TERMINATED BY '\n';";
