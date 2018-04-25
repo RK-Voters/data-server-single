@@ -1,5 +1,13 @@
 <?php
 
+	$pathToDBLIB = dirname(__FILE__) . '/../rk-config.php';
+	include($pathToDBLIB);
+	
+	global $rkdb;
+	$conn = $rkdb -> conn;
+
+
+
 	// open the output stream
 	// $fh = fopen('dion_2018.csv', 'w');
         
@@ -19,10 +27,7 @@
 	// fputcsv($fh, $fields);
 
 
-	// CONNECT TO DATABASE
-    $cons = mysqli_connect("localhost", "root","root","dion_master") or die("Unable to connect to database.");
-
-
+	
 	// AND EXPORT...
 	$sql = 	"SELECT " . implode(',', $fields) .
 			" FROM voters
@@ -36,4 +41,4 @@
 
 	echo "\n\n\n";
 
-  	mysqli_query($cons, $sql)or die($cons -> error);
+  	mysqli_query($conn, $sql)or die($cons -> error);

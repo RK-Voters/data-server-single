@@ -291,7 +291,8 @@
 				$sql = "SELECT * FROM voters WHERE 
 							phone = '" . $this -> db -> escape($person['phone']) . "' 
 							and rkid <> " . $this -> db -> escape($person['rkid']) . " 
-							and city='" . $this -> db -> escape($person['city']) . "'";
+							and city='" . $this -> db -> escape($person['city']) . "'
+							and zip='" . $this -> db -> escape($person['zip']) . "'";
 
 				//echo $sql;
 				$sameNumber = $this -> db -> get_results($sql);
@@ -310,7 +311,8 @@
 							and stname = '" . $this -> db -> escape($person['stname']) . "'
 							and unit = '" . $this -> db -> escape($person['unit']) . "'
 							and rkid <> " . $this -> db -> escape($person['rkid']) . "
-							and city='" . $this -> db -> escape($person['city']) . "'";
+							and city='" . $this -> db -> escape($person['city']) . "'
+							and zip='" . $this -> db -> escape($person['zip']) . "'";
 				//echo $sql;
 
 				$housemates = $this -> db -> get_results($sql);
