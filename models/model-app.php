@@ -334,17 +334,13 @@
 		// create person
 		function addPerson(){
 			extract($this -> request);
-			if(count($person) == 0){
+			if(!isset($person)){
 				return array("error" => "No person submitted.");
 			}
-			$response = array(
-					"rkid" => $this -> db -> insert('voters', $person)
-			);
 
-			if(isset($type)){
-				$response['knocklist'] = $this -> get_knocklist();
-			}
-			return $response;
+			$rkid = $this -> db -> insert('voters', $person);
+			
+			return $this -> getFullPerson($rkid);
 		}
 
 		// update person
@@ -364,6 +360,8 @@
 			foreach($cb_fields as $f){
 				$update[$f] = (isset($update[$f]) && $update[$f] == "true") ? 1 : 0;
 			}
+
+
 
 
 			$this -> db -> update('voters', $update, $where);
@@ -420,17 +418,29 @@
 			// if you made a phone call, record it for others with the same number
 			if($contact['type'] == 'Phone Call' && $person['phone'] != '') {
 
-				$sql = "SELECT * FROM voters WHERE 
+				$sql = "SELECT rkid, callcount FROM voters WHERE 
 								phone = '" . $this -> db -> escape($person['phone']) . "' 
 								and city='" . $this -> db -> escape($person['city']) . "'";
 
 				$sameNumber = $this -> db -> get_results($sql);
 				//$this -> request['person']['callcount']++;
 
+
 				foreach($sameNumber as $target){
 					$contact['rkid'] = $target -> rkid;
-					$response = $this -> db -> insert('voters_contacts', $contact);
+					$this -> db -> insert('voters_contacts', $contact);
+
+					$this -> db -> update(	'voters', 
+											array('callcount' => ($target -> callcount + 1)), 
+											array('rkid' => $target -> rkid));
+
 				}
+
+
+				$this -> request['person'] -> callcount++;
+
+
+				//print_r($this -> request);
 			}
 
 			// if not, just record the contact for the person targetted
