@@ -540,19 +540,29 @@
 
 		// get donations
 		function getDonations(){
-			$sql = 'SELECT v.firstname, v.lastname, v.rkid, v.id, vc.amount, v.city, vc.datetime
+			$sql = 'SELECT v.firstname, v.lastname, v.rkid,  vc.amount, v.city, v.state, vc.datetime,
+							v.phone, v.employer, v.profession, v.stnum, v.stname, v.zip, v.country, v.email
 					FROM voters v
 					INNER JOIN voters_contacts vc ON v.rkid = vc.rkid
 					WHERE vc.type = "Donation"
 					ORDER BY vc.datetime';
 
+
+		//$fields = array('amount', 'date', 'firstname', 'lastname', 'city', 'state', 'phone', 'employer', 'profession', 'address', 'address2', 'zip', 'country', 'email');
+
+
 			$results = $this -> db -> get_results($sql);
 			$donors = [];
 			$prev_id = 0;
 
-			$donSets[0]['title'] = 'Non-Local';
-			$donSets[1]['title'] = 'Local';
+			$donSets[0]['title'] = 'In State';
+			$donSets[1]['title'] = 'Out of State';
 			$donSets[2]['title'] = 'Small';
+
+			foreach($donSets as $k => $s) {
+				$donSets[$k]['total'] = 0;
+				$donSets[$k]['donors'] = array();
+			}
 
 			foreach($results as $r){
 
@@ -560,13 +570,18 @@
 					$setIndex = 2;
 				}
 				else {
-					$setIndex = (strtoupper($r -> city) == 'PORTLAND') ? 1 : 0;
-					foreach($r as $k => $v){
-						if($k == 'firstname' || $k == 'lastname'){
-							$r -> $k = stripSlashes(strtoupper($v));
-						}
+					$state = strtoupper($r -> state);
+					$setIndex = ($state == 'ME' || $state == 'MAINE') ? 0 : 1;
+					
+				}
+
+				foreach($r as $k => $v){
+					if($k == 'firstname' || $k == 'lastname'){
+						$r -> $k = stripSlashes(strtoupper($v));
 					}
 				}
+
+				$r -> address = $r -> stnum . ' ' . $r -> stname;
 
 				$datetime = strtotime($r -> datetime);
 				$r -> datetime = date("M j", $datetime);

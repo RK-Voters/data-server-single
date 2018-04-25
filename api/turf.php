@@ -1,8 +1,6 @@
 <?php
 
-	$city = "Bethel";
-
-    $zip = "04103";
+    $zip = "04282";
 
 
 	header('Content-Type: text/plain');
