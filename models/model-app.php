@@ -111,7 +111,7 @@
 
 			extract((array) $this -> request['listRequest']);
 
-			$limit = ' LIMIT 500';
+			$limit = ' LIMIT 700';
 
 			$where = array();
 
