@@ -154,6 +154,17 @@
 				$where[] = "sex='" . $this -> db -> escape($sex) . "'";
 			}
 
+			if(isset($selected_streets) && count($selected_streets) != 0){
+
+				$terms = array();
+
+				foreach($selected_streets as $s){
+					$terms[] = 'stname ="' . $this -> db -> escape($s) . '"';
+				}
+
+				$where[] = '(' . implode(' OR ', $terms) . ')';
+				
+			}
 
 			// AGE
 			if($age_range != 'Age'){
@@ -244,6 +255,20 @@
 		}
 
 
+		function get_streets(){
+
+		extract((array) $this -> request['listRequest']);
+
+			if(!isset($city) || $city == '') handleError('Missing city.');
+
+			$sql = 'Select count(*) as total, stname
+					from voters
+					where active = 1 AND enroll="D" AND city="' . $this -> db -> escape($city) . '"
+					group by stname
+					order by total desc';
+
+			return $this -> db -> get_results($sql);
+		}
 
 
 		// get person's full record
